@@ -1,0 +1,97 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+typedef long long ll;
+const int inf = INT_MAX;
+const ll Linf = LLONG_MAX;
+#define endl '\n'
+
+#define lson (p<<1)
+#define rson (p<<1|1)
+#define mid ((l+r)>>1)
+
+const int N=1e5+10;
+int tr[N<<2],lz[N<<2],a[N];
+
+void build(int l,int r,int p)
+{
+    if(l==r) 
+        return void(tr[p]=a[l]);
+    else
+    {
+        build(l,mid,lson);
+        build(mid+1,r,rson);
+        tr[p]=tr[lson]+tr[rson];
+    }
+}
+
+void mark(int l,int r,int k,int p)
+{
+    lz[p]+=k;
+    tr[p]+=k*(r-l+1);
+}
+
+void pushdown(int l,int r,int p)
+{
+    mark(l,mid,lz[p],lson);
+    mark(mid+1,r,lz[p],rson);
+    lz[p]=0;
+}
+
+void update(int x,int y,int l,int r,int p,int k)
+{
+    if(x<=l&&r<=y)
+        mark(l,r,k,p);
+    else
+    {
+        if(lz[p]) 
+            pushdown(l,r,p);
+        if(x<=mid) 
+            update(x,y,l,mid,lson,k);
+        if(y>mid)
+            update(x,y,mid+1,r,rson,k);
+        tr[p]=tr[lson]+tr[rson];
+    }
+}
+
+int query(int x,int y,int l,int r,int p)
+{
+    if(x<=l&&r<=y)
+        return tr[p];
+    else
+    {
+        if(lz[p])
+            pushdown(l,r,p);
+        int ret=0;
+        if(x<=mid) ret+=query(x,y,l,mid,lson);
+        if(y>mid) ret+=query(x,y,mid+1,r,rson);
+        return ret;
+    }
+}
+
+signed main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(0), cout.tie(0);
+    int n,m;
+    cin>>n>>m;
+    for(int i=1;i<=n;i++)
+        cin>>a[i];
+    build(1,n,1);
+    while(m--)
+    {
+        int op,x,y,k;
+        cin>>op;
+        if(op==1)
+        {
+            cin>>x>>y>>k;
+            update(x,y,1,n,1,k);
+        }
+        else
+        {
+            cin>>x>>y;
+            cout<<query(x,y,1,n,1)<<endl;
+        }
+    }
+    return 0;
+}
